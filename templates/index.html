@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Array Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body>
+    <h1>Real-Time Random Array Generator</h1>
+    <label for="size">Array Size:</label>
+    <input type="number" id="size" value="10000"><br>
+    <label for="range_min">Min Range:</label>
+    <input type="number" id="range_min" value="0"><br>
+    <label for="range_max">Max Range:</label>
+    <input type="number" id="range_max" value="99999"><br>
+    <button onclick="generateArray()">Generate Array</button>
+    <button onclick="getPreviousArrays()">Get Previous Arrays</button>
+    <div id="arrays"></div>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        function generateArray() {
+            var size = document.getElementById('size').value;
+            var range_min = document.getElementById('range_min').value;
+            var range_max = document.getElementById('range_max').value;
+            socket.emit('generate_array', {size: size, range_min: range_min, range_max: range_max});
+        }
+
+        function getPreviousArrays() {
+            socket.emit('get_previous_arrays');
+        }
+
+        socket.on('array_generated', function(data) {
+            document.getElementById('arrays').innerHTML = `<p>${data.array}</p>`;
+        });
+
+        socket.on('previous_arrays', function(data) {
+            document.getElementById('arrays').innerHTML = data.map(item => `<p>${item.array}</p>`).join('');
+        });
+    </script>
+</body>
+</html>
